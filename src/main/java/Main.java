@@ -8,16 +8,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 
 public class Main {
-
-
 	public static Items importUrl(String urlName) {
 		Items allitems = new Items();
 
@@ -27,23 +25,21 @@ public class Main {
 			Scanner scan = new Scanner(in);
 
 			boolean isType = true;
-			int indexOffset =  0;
+			int indexOffset = 0;
 			int line = 1;
-			while (scan.hasNext())
-			{
+			while (scan.hasNext()) {
 				String str = scan.nextLine();
-				if (str.equals("") && isType){
+				if (str.equals("") && isType) {
 					isType = false;
 					indexOffset = line;
 				}
 
-				if (isType){
+				if (isType) {
 					allitems.addType(str);
 
-				}
-				else if (!str.equals("")) {
+				} else if (!str.equals("")) {
 					String[] itemArray = str.split("\t");
-					ItemInfo itemInfo  = new ItemInfo(line - indexOffset, Integer.parseInt(itemArray[0]), Integer.parseInt(itemArray[1]), itemArray[2]);
+					ItemInfo itemInfo = new ItemInfo(line - indexOffset, Integer.parseInt(itemArray[0]), Integer.parseInt(itemArray[1]), itemArray[2]);
 					allitems.addItem(itemInfo);
 				}
 				line++;
@@ -56,25 +52,25 @@ public class Main {
 		}
 		return allitems;
 	}
+
 	public static void main(String[] args) {
 		Items allitems = importUrl("https://yal.cc/game-tools/terraria-research/data.txt");
 
-
 		int players = Integer.parseInt(Utility.promptMeasure("How many players? \n"));
 		ObjectMapper mapper = new ObjectMapper();
-		Map<Integer, Integer> outputMap = new HashMap<>();
+		Map<String, ResearchTree> playerItems = new HashMap<>();
+		Map<Integer, Integer> outputMap = new LinkedHashMap<>();
 
-		for (int i = 0; players > i; i++){
+		for (int i = 0; players > i; i++) {
 			String fileLoc = Utility.promptMeasure("Enter file location: \n");
 
 			try {
-				ResearchTree researchTree  = mapper.readValue(new File(fileLoc), ResearchTree.class);
+				ResearchTree researchTree = mapper.readValue(new File(fileLoc), ResearchTree.class);
 
+				playerItems.put(fileLoc, researchTree);
 
 				researchTree.getResearch()
 						.forEach((key, value) -> outputMap.merge(key, value, (v1, v2) -> Math.min(v1 + v2, allitems.getItems().get(key).getAmountNeeded())));
-
-
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -94,7 +90,6 @@ public class Main {
 		System.out.println("Done");
 
 	}
-
 }
 
 
