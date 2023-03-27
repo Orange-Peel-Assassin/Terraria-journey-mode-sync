@@ -70,7 +70,13 @@ public class Main {
 				playerItems.put(fileLoc, researchTree);
 
 				researchTree.getResearch()
-						.forEach((key, value) -> outputMap.merge(key, value, (v1, v2) -> Math.min(v1 + v2, allitems.getItems().get(key).getAmountNeeded())));
+						.forEach((key, value) -> outputMap.merge(key, value, (v1, v2) -> {
+							try {
+								return Math.min(v1 + v2, allitems.getItems().get(key).getAmountNeeded());
+							} catch (NullPointerException e) {
+								return Math.max(v1, v2);
+							}
+						}));
 
 			} catch (IOException e) {
 				e.printStackTrace();
